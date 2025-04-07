@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>To-do CRUD</title>
+
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="css/site.css" />
+</head>
+<body class="container my-5">
+
+    <h1 class="mb-4">To-do List</h1>
+
+    <div class="mb-4">
+        <h3>Add</h3>
+        <form class="row g-2" action="javascript:void(0);" method="POST" onsubmit="addItem()">
+            <div class="col-auto">
+                <input type="text" id="add-name" class="form-control" placeholder="New to-do">
+            </div>
+            <div class="col-auto">
+                <input type="submit" class="btn btn-primary" value="Add">
+            </div>
+        </form>
+    </div>
+
+    <div id="editForm" class="mb-4" style="background-color: #f8f9fa; padding: 1rem; border: 1px solid #ccc;">
+        <h3>Edit</h3>
+        <form id="edit-form" class="needs-validation" novalidate onsubmit="updateItem(event)">
+            <input type="hidden" id="edit-id" name="edit-id">
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" id="edit-isComplete" name="edit-isComplete" class="form-check-input">
+                <label class="form-check-label" for="edit-isComplete">Completed</label>
+            </div>
+
+            <div class="mb-3">
+                <input type="text" id="edit-name" name="edit-name" class="form-control" placeholder="Edit to-do" required>
+                <div class="invalid-feedback">
+                    To-do name cannot be empty.
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeInput()">Cancel</button>
+        </form>
+    </div>
+
+
+    <p id="counter" class="fw-bold"></p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Is Complete?</th>
+                <th scope="col">Name</th>
+                <th scope="col" colspan="2">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="todos"></tbody>
+    </table>
+
+    <script src="js/site.js" asp-append-version="true"></script>
+
+    <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript">
+        getItems();
+    </script>
+</body>
+</html>
