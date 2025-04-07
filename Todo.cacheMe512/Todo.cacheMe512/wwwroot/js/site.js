@@ -1,5 +1,18 @@
 ﻿const uri = 'api/todoitems';
 let todos = [];
+let pendingDeleteId = null;
+let deleteModal;
+
+document.addEventListener('DOMContentLoaded', () => {
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (pendingDeleteId !== null) {
+            deleteItemConfirmed(pendingDeleteId);
+            pendingDeleteId = null;
+            deleteModal.hide();
+        }
+    });
+});
 
 function getItems() {
     fetch(uri)
@@ -128,7 +141,7 @@ function _displayItems(data) {
         let deleteButton = document.createElement('button');
         deleteButton.innerText = 'Delete';
         deleteButton.className = 'btn btn-sm btn-outline-danger';
-        deleteButton.addEventListener('click', () => deleteItem(item.id));
+        deleteButton.addEventListener('click', () => showDeleteConfirmation(item.id));
 
         let tr = tBody.insertRow();
 
@@ -146,4 +159,17 @@ function _displayItems(data) {
     });
 
     todos = data;
+}
+
+function showDeleteConfirmation(id) {
+    pendingDeleteId = id;
+    deleteModal.show();
+}
+
+function deleteItemConfirmed(id) {
+    fetch(`${uri}/${id}`, {
+        method: 'DELETE'
+    })
+        .then(() => getItems())
+        .catch(error => console.error('Unable to delete item.', error));
 }
