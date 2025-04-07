@@ -5,6 +5,7 @@ let deleteModal;
 
 document.addEventListener('DOMContentLoaded', () => {
     deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
     document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
         if (pendingDeleteId !== null) {
             deleteItemConfirmed(pendingDeleteId);
@@ -12,7 +13,30 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteModal.hide();
         }
     });
+
+    getItems();
 });
+
+
+function showAlert(message, type = 'info') {
+    const alertContainer = document.getElementById('alert-container');
+    alertContainer.innerHTML = ''; // clear previous alerts if needed
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    alertContainer.append(wrapper);
+}
+function clearAlert() {
+    const alertContainer = document.getElementById('alert-container');
+    if (alertContainer) {
+        alertContainer.innerHTML = '';
+    }
+}
 
 function getItems() {
     fetch(uri)
@@ -69,14 +93,16 @@ function displayEditForm(id) {
     const form = document.getElementById('editForm');
     form.classList.remove('d-none');
     form.style.display = 'block';
+
+    setEditMode(true);
+    showAlert('Changes are not saved until you click Save.', 'warning', 5000);
 }
-
-
 
 function updateItem(event) {
     event.preventDefault();
 
     const form = document.getElementById('edit-form');
+
     if (!form.checkValidity()) {
         form.classList.add('was-validated');
         return;
@@ -97,20 +123,28 @@ function updateItem(event) {
         },
         body: JSON.stringify(item)
     })
-        .then(() => getItems())
-        .catch(error => console.error('Unable to update item.', error));
+        .then(() => {
+            getItems();
+            clearAlert();
+            showAlert('To-do updated successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Unable to update item.', error);
+            showAlert('Failed to update item. Please try again.', 'danger');
+        });
 
     closeInput();
+    setEditMode(false);
     form.classList.remove('was-validated');
 }
-
 
 function closeInput() {
     const form = document.getElementById('editForm');
     form.classList.add('d-none');
     form.style.display = 'none';
+    clearAlert();
+    setEditMode(false);
 }
-
 
 function _displayCount(itemCount) {
     const name = (itemCount === 1) ? 'to-do' : 'to-dos';
@@ -140,7 +174,7 @@ function _displayItems(data) {
 
         let deleteButton = document.createElement('button');
         deleteButton.innerText = 'Delete';
-        deleteButton.className = 'btn btn-sm btn-outline-danger';
+        deleteButton.className = 'btn btn-sm btn-outline-danger delete-btn';
         deleteButton.addEventListener('click', () => showDeleteConfirmation(item.id));
 
         let tr = tBody.insertRow();
@@ -172,4 +206,15 @@ function deleteItemConfirmed(id) {
     })
         .then(() => getItems())
         .catch(error => console.error('Unable to delete item.', error));
+}
+
+function setEditMode(enabled) {
+    const addButton = document.getElementById('add-button');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+
+    if (addButton) addButton.disabled = enabled;
+
+    deleteButtons.forEach(btn => {
+        btn.disabled = enabled;
+    });
 }
